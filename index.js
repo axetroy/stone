@@ -1,7 +1,18 @@
-class Stone {
-  constructor(obj) {
+export default class Stone {
+  constructor(obj = {}) {
     this.subscriber = [];
     this.state = { ...{}, ...obj };
+
+    Object.defineProperty(this, 'state', { enumerable: false });
+    Object.defineProperty(this, 'subscriber', { enumerable: false });
+    Object.defineProperty(this, 'length', {
+      enumerable: false,
+      configurable: false,
+      get() {
+        return this.keys().length;
+      }
+    });
+
     for (let key in obj) {
       if (obj.hasOwnProperty(key)) {
         this.set(key, obj[key]);
@@ -13,6 +24,7 @@ class Stone {
   set(key, value) {
     const oldValue = this[key];
     this.state = { ...this.state, ...{ [key]: value } };
+
     if (!Object.getOwnPropertyDescriptor(this, key)) {
       Object.defineProperty(this, key, {
         enumerable: true,
@@ -21,7 +33,7 @@ class Stone {
           return this.state[key];
         },
         set(value) {
-          console.log(new Error(`can't set value for ${key}, please use .set`));
+          throw new Error(`can't set value for ${key}, please use .set`);
         }
       });
     }
@@ -30,6 +42,7 @@ class Stone {
         func.call(this, key, oldValue, value);
       });
     }
+    return this;
   }
 
   remove(key) {
@@ -37,10 +50,12 @@ class Stone {
     if (this.hasOwnProperty(key)) {
       delete this[key];
     }
+    return this;
   }
 
   subscribe(func) {
     this.subscriber.push(func);
+    return this;
   }
 
   // Object method
@@ -52,13 +67,7 @@ class Stone {
     return Object.values(this.state);
   }
 
-  entries() {}
-
   toString() {
     return this.state.toString();
-  }
-
-  get length() {
-    return this.keys().length;
   }
 }

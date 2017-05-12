@@ -1,123 +1,33 @@
-/**
- * Created by axetroy on 2017/3/6.
- */
-import pkg from '../../package.json';
 import test from 'ava';
-import EventEmitter from '../../index';
+import Stone from '../../dist/stone';
 
-const name = pkg.name;
-
-let event;
+let stone;
 
 test.beforeEach(t => {
-  event = new EventEmitter();
+  stone = new Stone({ username: 'axetroy' });
   t.pass();
 });
 
-test('.on()', t => {
-  let apply = false;
-  event.on('hello', function (data) {
-    apply = true;
-    t.deepEqual(data, 'Axetroy');
+test('basic', t => {
+  t.truthy(stone.state);
+  t.truthy(stone.subscriber);
+  t.true(Array.isArray(stone.subscriber));
+
+  t.deepEqual(stone.username, 'axetroy');
+  t.deepEqual(Object.keys(stone), ['username']);
+
+  stone.set('username', 'hello');
+  t.deepEqual(stone.username, 'hello');
+  t.deepEqual(Object.keys(stone), ['username']);
+
+  t.throws(() => {
+    stone.username = 'it should throw an error';
   });
-  event.emit('hello', 'Axetroy');
-  t.true(apply);
 });
 
-test('.on() cancel the listener', async t => {
-  let count = 0;
-  const cancel = event.on('hello', function (data) {
-    count++;
-  });
-  t.deepEqual(count, 0);
-  event.emit('hello');
-  t.deepEqual(count, 1);
-
-  event.emit('hello');
-  t.deepEqual(count, 2);
-
-  cancel();
-
-  event.emit('hello');
-  t.deepEqual(count, 2);
-
-  event.emit('hello');
-  t.deepEqual(count, 2);
-});
-
-test('.once()', async t => {
-  let count = 0;
-  event.once('hello', function (data) {
-    count++;
-  });
-  t.deepEqual(count, 0);
-  event.emit('hello');
-  t.deepEqual(count, 1);
-
-  event.emit('hello');
-  t.deepEqual(count, 1);
-
-  event.emit('hello');
-  t.deepEqual(count, 1);
-
-  event.emit('hello');
-  t.deepEqual(count, 1);
-});
-
-test('.off()', async t => {
-  let apply = false;
-  event.on('hello', function () {
-    apply = true;
-  });
-
-  t.is(event[name]["hello"].length, 1);
-
-  event.off('hello');
-
-  t.is(event[name]["hello"].length, 0);
-  t.deepEqual(event[name]["hello"], []);
-  event.emit('hello');
-  t.false(apply);
-});
-
-test('.off() cancel this event listener', async t => {
-  let apply = false;
-
-  function handler() {
-    apply = true;
-  }
-
-  event.on('hello', handler);
-  event.on('hello', handler);
-
-
-  t.is(event[name]["hello"].length, 2);
-
-  event.off('hello');
-
-  t.is(event[name]["hello"].length, 0);
-  t.deepEqual(event[name]["hello"], []);
-  event.emit('hello');
-  t.false(apply);
-});
-
-test('.clear()', async t => {
-  let apply = false;
-
-  function handler() {
-    apply = true;
-  }
-
-  event.on('say', handler);
-  event.on('hello', handler);
-
-
-  t.is(Object.keys(event[name]).length, 2);
-
-  event.clear();
-
-  t.is(Object.keys(event[name]).length, 0);
-  event.emit('hello');
-  event.emit('say');
-  t.false(apply);
+test('set an prototype property', t => {
+  stone.set('length', 333); // can't cover the private property
+  t.is(stone.length, 2);
+  t.is(Object.keys(stone.state).length, 2);
+  t.deepEqual(Object.keys(stone), ['username']);
 });
