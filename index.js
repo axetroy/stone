@@ -3,11 +3,17 @@ export default class Stone {
     this.subscriber = [];
     this.state = { ...{}, ...obj };
 
-    Object.defineProperty(this, 'state', { enumerable: false });
-    Object.defineProperty(this, 'subscriber', { enumerable: false });
-    Object.defineProperty(this, 'length', {
+    Object.defineProperty(this, 'state', {
       enumerable: false,
-      configurable: false,
+      configurable: false
+    });
+    Object.defineProperty(this, 'subscriber', {
+      enumerable: false,
+      configurable: false
+    });
+    Object.defineProperty(this, 'length', {
+      configurable: true,
+      enumerable: false,
       get() {
         return this.keys().length;
       }
@@ -28,7 +34,7 @@ export default class Stone {
     if (!Object.getOwnPropertyDescriptor(this, key)) {
       Object.defineProperty(this, key, {
         enumerable: true,
-        configurable: false,
+        configurable: true,
         get() {
           return this.state[key];
         },
@@ -54,8 +60,24 @@ export default class Stone {
   }
 
   subscribe(func) {
+    func.__id__ = Math.random().toFixed(5);
     this.subscriber.push(func);
-    return this;
+    return () => {
+      const index = this.subscriber.findIndex(handler => {
+        return handler.__id__ && handler.__id__ === func.__id__;
+      });
+      if (index >= 0) {
+        this.subscriber.splice(index, 1);
+      }
+    };
+  }
+
+  watch(key, callback) {
+    return this.subscribe((_key, oldValue, newValue) => {
+      if (key === _key) {
+        callback.call(this, oldValue, newValue);
+      }
+    });
   }
 
   // Object method
@@ -64,10 +86,20 @@ export default class Stone {
   }
 
   values() {
-    return Object.values(this.state);
+    let values = [];
+    for (let key in this.state) {
+      if (this.state.hasOwnProperty(key)) {
+        values.push(this.state[key]);
+      }
+    }
+    return values;
   }
 
   toString() {
     return this.state.toString();
+  }
+
+  stringify() {
+    return JSON.stringify(this.state);
   }
 }
