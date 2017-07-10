@@ -1,5 +1,6 @@
 ## stone.js
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/axetroy/stone.svg)](https://greenkeeper.io/)
 [![Build Status](https://travis-ci.org/axetroy/stone.svg?branch=master)](https://travis-ci.org/axetroy/stone)
 [![Dependency](https://david-dm.org/axetroy/stone.svg)](https://david-dm.org/axetroy/stone)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
